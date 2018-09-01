@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>vue2</title>
+    <meta charset="utf-8">
+    <script src="./vue.js"></script>
+
+  </head>
+  <body>
+
+    <div id="app-1">
+      <!-- v-once命令用于执行一次性地插值 当数据改变时 插值处的内容不会更新 -->
+      <p v-once>{{ message1 }}</p>
+    </div>
+
+    <script>
+      var app1 = new Vue({
+        el: '#app-1',
+        data: {
+          message1: 'hello Vue!'
+        }
+      })
+      app1.message1 = 'change it!'    // 这里的修改对p元素无效
+      console.log(app1.message1)      // change it!
+    </script>
+
+    <div id="app-2">
+      <div>{{methodsNow()}}</div>  <!-- 方法调用 -->
+      <div>{{computedNow}}</div>  <!-- 计算属性调用 -->
+      <div>{{methodsNow()}}</div>  <!-- 方法调用时 无论对应依赖(mData)是否发生改变 函数都会执行一次 -->
+      <div>{{computedNow}}</div>  <!-- 这里调用计算属性 由于其对应依赖(cData)没有发生改变 所以计算属性computedNow对应的函数不会再次执行 这里只是返回缓存值 -->
+    </div>
+
+    <script>
+      var app2 = new Vue({
+        el:'#app-2',
+        // 与 data: {} 写法等价
+        data () {
+          return {
+            mData: 1,
+            cData: 2
+          }
+        },
+        methods: {
+          methodsNow: function () {
+            console.log('methods')
+            return this.mData
+          }
+        },
+        computed: {
+          // 声明一个计算属性
+          // 计算属性是基于它们的依赖进行缓存的 计算属性只有在它的相关依赖(cData)发生改变时才会重新求值
+          computedNow: function () {
+            console.log('computed')
+            return this.cData
+          }
+        }
+      });
+
+      //查看Console可以看到 说明计算属性对应的函数只调用了一次
+      //methods
+      //computed
+      //methods
+
+      // 在控制台执行 app2.cData =22 从这里的输出可以看出 当数据发生变化时 基于数据的方法和计算属性都会重新调用
+      // methods
+      // computed
+      // methods
+
+    </script>
+
+    <div id="app-3">
+      <!-- 每次点击时 显示的时间都不同 -->
+      <!-- 下面是 v-on:click="showMethod" 的简写方式 事件监听的回调是一个method时 圆括号可以省略 -->
+      <button @click="showMethod()">methodsNow</button>
+
+      <!-- 每次点击时 显示的时间都相同 -->
+      <button @click="showComputed">computedNow</button>
+    </div>
+
+    <script>
+      var app3 = new Vue({
+        el: '#app-3',
+        methods: {
+          methodsNow: function(){
+            return new Date().toLocaleString();
+          },
+          showMethod: function() {
+            alert(this.methodsNow());
+          },
+          showComputed: function() {
+            alert(this.computedNow);
+          }
+        },
+
+        computed: {  // 当点击第二个按钮computedNow时 这里的函数被调用 最终返回一个时间字符串给computedNow属性 它不会再发生变化 被缓存起来
+          computedNow: function(){
+            return new Date().toLocaleString();
+          }
+        }
+      })
+      // 总而言之 方法和计算属性对应的都是一个函数 每次调用方法时都会去调用一次相应的函数 
+      // 但是调用计算属性时 有两种情况 
+      // 一种是计算属性对应的函数的返回值与vue实例提供的数据无关 这种情况只有第一次调用时会执行对应函数 然后函数返回值赋值给这个计算属性 而对应的函数不再会被调用
+      // 可以查看 app3.computedNow 它是一个字符串 而不是函数
+      // 第二种情况 就是计算属性访问了vue实例提供的数据(_data) 当数据没有变化时 那就和第一种情况一样 但是当数据发生变化时 计算属性对应的函数就会再次被调用 刷新计算属性的缓存值
+    </script>
+    
+  </body>
+</html>

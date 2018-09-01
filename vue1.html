@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>vue1</title>
+    <meta charset='utf-8'>
+    <script src="./vue.js"> // Vue.js v2.5.13 </script>
+  </head>
+
+  <body>
+
+    <div id="app-1">
+      <p>{{ message1 }}</p>
+    </div>
+
+    <!-- 这个script标签不能放到div标签前面 应该先让html文档被加载 存在对应的DOM后才能够绑定 -->
+    <!-- 所以当控制台出现 [Vue warn]: Cannot find element: #app-1 这样的报错时 很可能是因为DOM还没有加载完就先执行了JS代码 -->
+    <script>
+      var app1 = new Vue({  // 创建一个Vue实例
+        el: '#app-1',  // 将该实例绑定到 id属性为'app-1'的元素上 被绑定的元素变为响应式的
+        data: {  // 向Vue实例绑定的元素节点提供的可用数据
+          message1: 'hello Vue!'
+        }
+      })
+      app1.message1 = 'change it!'  // 修改所绑定元素的默认内容 不要写成 app1.data.message1 但可以写成app1._data.message1 这行代码也可以写到控制台中
+    </script>
+
+    <div id="app-2">
+      <!-- v-bind设置元素节点的属性 可以用于响应式地更新HTML元素的属性 -->
+      <!-- 将span元素节点的title属性和Vue实例的message2属性的值保持一致 -->
+      <!-- v-bind指令使得"message2"并不是单纯的直接作为一个字符串赋值给title属性 而是获取Vue实例中的数据message2赋值给title属性 -->
+      <span v-bind:title="message2">鼠标悬停几秒钟查看此处动态绑定的提示信息!</span>
+      <a v-bind:href="url">link</a>
+    </div>
+
+    <script>
+      var app2 = new Vue({
+        el: '#app-2',
+        data: {
+          message2: '页面加载于 ' + new Date().toLocaleString(),
+          url: 'https://www.baidu.com/'
+        }
+      })
+      app2._data.url = 'http://www.sina.com.cn/'
+
+      // v-bind 有两个作用 为html元素添加属性 和 向子组件中传递数据
+    </script>
+
+    <div id="app-3">
+      <!-- 当v-if=false时 隐藏该元素节点 -->
+      <p v-if="seen">show something</p>
+    </div>
+
+    <script>
+      var app3 = new Vue({
+        el: '#app-3',
+        data: {
+          seen: true  // 通过seen的值来控制p元素节点显示或隐藏
+        }
+      })
+    </script>
+
+    <div id="app-4">
+      <ol>
+        <span v-for="n in 10">{{ n }} </span>  <!-- 这里可以用js语法 例如 "n in new Array(5).fill(2)" -->
+        <li v-for="todo in todos">{{ todo.text }}</li>
+      </ol>
+    </div>
+
+    <script>
+      var app4 = new Vue({
+        el: '#app-4',
+        data: {
+          todos: [
+            { text: 'JavaScript' },  //todo
+            { text: 'CSS' },  //todo
+            { text: 'HTML' }  //todo
+          ]
+        }
+      })
+
+      app4.todos.push({ text: 'something new' })  // 这里的操作说明可以实时操作vue实例中的数据 当数据发生变化时 vue实例所绑定到的元素会发生实时变化
+    </script>
+
+    <div id="app-5">
+      <p>{{ message5 }}</p>
+      <!-- v-on指令用于监听DOM事件 当单击时 调用Vue实例中定义的方法reverseMessage -->
+      <button v-on:click="reverseMessage">Reverse</button>
+    </div>
+
+    <script>
+      var app5 = new Vue({
+        el: '#app-5',
+        data: {
+          message5: 'hello Vue.js!'
+        },
+        methods: {
+          // 通过监听元素的单击事件来触发该函数 通过该内部方法来修改Vue实例提供的数据message5
+          reverseMessage: function () {
+            // split() 将字符串变为数组  ["h", "e", "l", "l", "o", " ", "V", "u", "e", ".", "j", "s", "!"]
+            // reverse() 反转数组  ["!", "s", "j", ".", "e", "u", "V", " ", "o", "l", "l", "e", "h"]
+            // join() 将数组变为字符串  "!sj.euV olleh"
+            // 这里this指向该Vue实例app5
+            this.message5 = this.message5.split('').reverse().join('')
+          }
+        }
+      })
+    </script>
+
+    <div id="app-6">
+      <!-- 表单输入和应用状态之间的双向绑定 -->
+      <!-- v-model通常用在input元素上 -->
+      <input v-model="message6">  <!-- 这里输入的字符将实时修改Vue实例的数据message6 -->
+      <p>{{ message6 }}</p>
+    </div>
+
+    <script>
+      var app6 = new Vue({
+        el: '#app-6',
+        data: {
+          message6: 'hello vue!'
+        }
+      })
+    </script>
+
+  </body>
+</html>
