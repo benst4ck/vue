@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>vue3</title>
+    <meta charset="utf-8">
+    <script src="./vue.js"></script>
+    <style>
+
+      .static {
+        border: 5px solid #0077c0
+      }
+      .active {
+        width: 30px;
+        height: 30px;
+        background-color: #98c807
+
+      }
+      .text-danger {
+        border: 3px solid #ffa930
+      }
+    </style>
+
+  </head>
+  <body>
+
+    <!-- v-bind:class指令可以与普通的class属性共存 -->
+    <div id="app-1" class="static" v-bind:class="{ active: isActive, 'text-danger': hasError }"></div> </br>
+
+    <script>
+      new Vue({
+        el: '#app-1',
+        data: {
+          isActive: true,
+          hasError: false
+        }
+      })
+
+      // 渲染结果 <div id="app-1" class="static active"></div> 后面的样式会覆盖前面的样式 static和active样式出现冲突时 以后面的active样式为主
+      // 传给v-bind:class一个对象 以动态地切换class 类名带'-'时 需要给类名加引号
+      // 通过isActive和hasError的布尔值来动态的决定是否给绑定的元素添加相应的类
+    </script>
+
+    <div id="app-2" class="active" v-bind:class="classObject"></div> </br>
+
+    <script>
+      new Vue({
+        el: '#app-2',
+        data: {
+          // 绑定的数据对象不必内联定义在模板(div)里
+          classObject: {
+            static: false,
+            'text-danger': true
+          }
+        }
+      })
+
+      // <div id="app-2" class="active text-danger"></div>
+    </script>
+
+    <div id="app-3" v-bind:class="classObject()"></div>
+
+    <script>
+      new Vue({
+        el: '#app-3',
+        data: {
+          isActive: true,
+          error: null
+        },
+        methods: {
+          classObject: function () {
+            return {
+              active: this.isActive && !this.error  // !null 返回 true
+            }
+          }
+        }
+      })
+
+      // <div id="app-3" class="active"></div>
+    </script>
+
+    <div id="app-4">
+      <h1 v-if="status == 'ok' ">yes</h1>
+      <h1 v-else>no</h1>
+    </div>
+    <script>
+      // v-if是惰性的 如果在初始渲染时条件为假 则什么也不做 直到条件第一次变为真时 才会开始渲染条件块
+      // v-if的值为真时 显示其对应的元素 此时不显示v-else对应的元素
+      // v-if的值为假时 不显示其对应的元素 此时显示v-else对应的元素
+      var app4 = new Vue({
+        el : '#app-4',
+        data : {
+          status : 'okay'
+        }
+      });
+
+      // 可以在控制台输入 app4.status="ok" 使得第一个h1元素被渲染
+    </script>
+
+    <div id="app-5">
+      <p v-if="ran">Now you see me</p>
+      <p v-else>Now you don't</p>
+      <button @click="toggle">toggle v-if</button>
+    </div>
+    
+    <script>
+      var app5 = new Vue({
+        el: '#app-5',
+        data:{
+          ran: true
+        },
+        methods:{
+          toggle: function(){
+            if(this.ran==true){
+              this.ran = false;
+            }else {
+              this.ran = true;
+            }
+          }
+        }
+      })
+
+    </script>
+
+    <div id="app-6">
+      <p v-if="type === 'A'">Apple</p>
+      <p v-else-if="type === 'B'">Box</p>
+      <p v-else-if="type === 'C'">Cat</p>
+      <p v-else>Not A/B/C</p>
+    </div>
+
+    <script>
+      var app6 = new Vue({
+        el: '#app-6',
+        data:{
+          type: 'B'
+        }
+      })
+    </script>
+
+    <h1 id="app-7" v-show="ok">Hello!</h1>
+
+    <script>
+      // v-show不管初始条件是什么(即使布尔值为false) 元素总是会被渲染到文档中 但只是简单地基于CSS的display属性进行切换
+      // v-show的值为true时 显示其对应元素 为false时(Boolean(0)为false) 则不显示 不显示的原理在于为对应元素添加 style="display: none;" 属性
+      var app6 = new Vue({
+        el: '#app-7',
+        data:{
+          ok: 0
+        }
+      })
+
+      // <h1 id="app-7" style="display: none;">Hello!</h1>
+    </script>
+
+  </body>
+</html>

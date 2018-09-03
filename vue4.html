@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>vue4</title>
+    <meta charset='utf-8'>
+    <script src="./vue.js"></script>
+  </head>
+  <body>
+    
+    <ul id="exa-1">
+      <!-- 用v-for把一个数组对应为一组元素 -->
+      <!-- 这里可以用of 也可以用in 和变量顺序有关 和变量名无关 -->
+      <li v-for="(item, index) of items">
+        {{ parentMessage }} - {{ index }} - {{ item.message }}
+      </li>
+    </ul>
+
+    <script>
+      var exa1 = new Vue({
+        el: '#exa-1',
+        data: {
+          parentMessage: 'Parent',
+          items: [
+            { message: 'Foo' },
+            { message: 'Bar' },
+            { message: 'FooBar' }
+          ]
+        }
+      })
+      exa1.items.push({ message: 'Baz' })
+      exa1.items.unshift({ message: 'bug' })
+    </script>
+
+    <ul id="exa-2">
+      <li v-for="(value, key) in object">
+        {{ key }}: {{ value }}
+      </li>
+    </ul>
+
+    <script>
+      var exa2 = new Vue({
+        el: '#exa-2',
+        data: {
+          object: {
+            firstName: 'John',
+            lastName: 'Doe',
+            age: 30
+          }
+        }
+      })
+    </script>
+
+    <ul id="exa-3">
+      <li v-for="n in evenNumbers">{{ n }}</li>
+    </ul>
+
+    <script>
+      //显示一个数组的过滤副本 不改变或重置原始数据
+      var exa3 = new Vue({
+        el: "#exa-3",
+        data: {
+          numbers: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+        },
+        computed: {
+          evenNumbers: function () {
+            return this.numbers.filter(function (number) {
+              return number % 2 === 0  // 返回值为true的number将被留下 其余的则被过滤掉
+            })
+          }
+          // 控制台访问exa3.evenNumbers 返回值为 [2, 4, 6, 8]
+        }
+      })
+    </script>
+
+    <ul id="exa-4">
+      <li v-for="n in even(numbers)">{{ n }}</li>
+    </ul>
+
+    <script>
+      new Vue({
+        el: "#exa-4",
+        data: {
+          numbers: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+        },
+        methods: {
+          even: function (numArr) {
+            return numArr.filter(function (number) {
+              return number % 2 === 0
+            })
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-5">
+      <!-- 如果列表不为空(即todos.length!=0) 则循环数组来渲染列表 否则输出 No todos left!-->
+      <ul v-if="todos.length">
+        <li v-for="todo in todos">
+          {{ todo }}
+        </li>
+      </ul>
+      <p v-else>No todos left!</p>
+    </div>
+
+    <script>
+      var app5 = new Vue({
+        el: '#exa-5',
+        data: {
+          todos: ["apple","boy","cat","dog"]
+        }
+      })
+    </script>
+
+    <ol id="exa-6">
+      <!-- 显示没有做的事情 -->
+      <li v-for="todo in todos" v-if="!todo.isComplete">
+        {{ todo.do }}
+      </li>
+    </ol>
+
+    <script>
+      new Vue({
+        el: '#exa-6',
+        data: {
+          todos :[
+            { isComplete: true, do: 'eating' },
+            { isComplete: false, do: 'working' },
+            { isComplete: true, do: 'drinking' },
+            { isComplete: false, do: 'swimming' },
+            { isComplete: false, do: 'sleep' }
+          ]
+        }
+      })
+    </script>
+
+  </body>
+</html>
