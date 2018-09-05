@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>vue5</title>
+    <meta charset='utf-8'>
+    <script src="./vue.js"></script>
+  </head>
+
+  <body>
+
+    <div id="exa-1">
+      <button v-on:click="greet">Greet</button>
+    </div>
+
+    <script>
+      var exa1 = new Vue({
+        el: '#exa-1',
+        data: {
+          name: 'Vue.js'
+        },
+        methods: {
+          greet: function (event) {
+            //this在方法里指当前Vue实例
+            alert('Hello ' + this.name + '!')
+            //event是原生DOM事件 事件属性target可返回触发该事件的节点
+            if (event) {
+              //console.log(event)
+              alert(event.target.tagName)
+            }
+          }
+        }
+      })
+      //如果直接调用 exa1.greet() 那么event为false if语句不会执行
+    </script>
+
+    <div id="exa-2">
+      <!-- checked属性规定在页面加载时应该被预先选定的input元素 -->
+      <!-- 这里通过v-model命令双向绑定数据 v-model通常用在input元素上 -->
+      <!-- 如果选中input元素 那么就会向checked数据赋值true 如果取消选中 则赋值false -->
+      <input type="checkbox" id="isChecked" v-model="checked"/>
+      <label for="isChecked">{{ checked }}</label>
+    </div>
+
+    <script>
+      var exa2 = new Vue({
+        el: '#exa-2',
+        data: {
+          checked: false  //通过修改这里的布尔值来设置加载页面时 默认为选择还是不选择
+        }
+      })
+    </script>
+
+    <div id="exa-3">
+      <!-- 双向绑定的数据可以是任意的一个记号 不一定非要是checked -->
+      <!-- 如果选中input元素 那么input元素的value属性的值就会赋值给mark -->
+      <input type="radio" id="one" value="One-1" v-model="mark">
+      <label for="one">One</label>
+      <br>
+      <input type="radio" id="two" value="Two-2" v-model="mark">
+      <label for="two">Two</label>
+      <br>
+      <span>Picked: {{ mark }}</span>
+    </div>
+
+    <script>
+      var exa3 = new Vue({
+        el: '#exa-3',
+        data: {
+          mark: ""
+        }
+      })
+    </script>
+
+    <div id='exa-4'>
+      <!-- 双向绑定的是value值 -->
+      <input type="checkbox" id="jack" value="Jack..." v-model="checkedNames">
+      <label for="jack">Jack!</label>
+      <input type="checkbox" id="john" value="John..." v-model="checkedNames">
+      <label for="john">John!</label>
+      <input type="checkbox" id="mike" value="Mike..." v-model="checkedNames">
+      <label for="mike">Mike!</label>
+      <br>
+      <span>Checked names: {{ checkedNames }}</span>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-4',
+        data: {
+          checkedNames: []
+        }
+      })
+    </script>
+
+    <div id="exa-5">
+      <select v-model="selected">
+        <option disabled value="">请选择</option>
+        <option>A</option>
+        <option>B</option>
+        <option>C</option>
+      </select>
+
+      <span>Selected: {{ selected }}</span>
+    </div>
+
+    <script>
+      var exa5 = new Vue({
+        el: '#exa-5',
+        data: {
+          selected: ''  // 当选项被选中时 选项的值会被赋值给selected
+        }
+      })
+    </script>
+
+    <div id="exa-6">
+      <select v-model="picked">
+        <option v-for="option in options" v-bind:value="option.value">
+          {{ option.text }}
+        </option>
+      </select>
+      <span>Selected: {{ picked }}</span>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-6',
+        data: {
+          picked: 'B',
+          options: [
+            { text: 'One', value: 'A' },
+            { text: 'Two', value: 'B' },
+            { text: 'Three', value: 'C' }
+          ]
+        }
+      })
+
+      // v-model指令只能用在 <input> <select> <textarea> 以实现双向绑定
+      // 所谓双向绑定 指的就是vue实例中的data与渲染的dom元素 内容上保持一致 两者中任何一个的改变都会使另一个发生实时改变
+      // 在exa6例子中 <select>元素与vue实例中的数据picked实现双向绑定 这时候初始默认渲染的页面中 该<select>元素下的value属性为 "B" 的<option>元素将被选中
+    </script>
+
+  </body>
+
+</html>
