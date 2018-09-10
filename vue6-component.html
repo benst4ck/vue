@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>vue-component-1</title>
+    <meta charset='utf-8'>
+    <script src="vue.js"></script>
+  </head>
+
+  <body>
+    <div id="exa-1">
+      <my-component></my-component>
+    </div>
+    <div id="exa-2">
+      <my-component></my-component>
+    </div>
+
+    <script>
+      // 注册全局组件 对任何Vue根实例都可以使用 确保初始化根实例之前注册组件
+      Vue.component('my-component', {
+        template: '<div>A custom component!</div>'
+      })
+      //创建根实例
+      new Vue({
+        el: '#exa-1'
+      })
+
+      new Vue({
+        el: '#exa-2'
+      })
+    </script>
+
+    <div id="exa-3">
+      <my-component></my-component>
+      <my-component1></my-component1>
+    </div>
+
+    <script>
+      var Child = {  // 定义在全局作用域global中
+        template: '<div>A custom component! local</div>'
+      }
+      new Vue({
+        el: '#exa-3',
+        // 注册局部组件
+        components: {
+          // <my-component1> 将只在父组件模板(id="exa-3"的元素下)中可用
+          'my-component1': Child
+        }
+      })
+    </script>
+
+    <div id="exa-4">
+      <simple-counter></simple-counter>
+      <simple-counter></simple-counter>
+      <simple-counter></simple-counter>
+    </div>
+
+    <script>
+      var data = { counter: 0 };
+      Vue.component('simple-counter', {
+        template: '<button v-on:click="counter += 1">{{ counter }}</button>',
+        // 组件中的data属性为组件提供数据 属性值应该是一个函数 函数的返回值应该是一个包含数据的对象
+        // 不能通过根实例的data属性向组件提供数据 除非通过其他属性
+        // 父组件中的三个子组件实例共享了同一个全局定义的data对象 因此递增一个counter会影响所有组件
+        data: function () {
+          return data  // 这里的返回值必须是一个对象 而数据包含在这个对象中
+        }
+      })
+      new Vue({
+        el: '#exa-4'
+      })
+    </script>
+
+    <div id="exa-5">
+      <simple-counter></simple-counter>
+      <simple-counter></simple-counter>
+      <simple-counter></simple-counter>
+    </div>
+
+    <script>
+      Vue.component('simple-counter', {
+        template: '<button v-on:click="counter += 1">{{ counter }}</button>',
+        // 上面一个实例中 三个组件共享一个全局变量 这样会导致 一个组件改变了变量后 会同时影响到其他组件的变量
+        // 现在每个组件都有自己独立的数据(counter)
+        data: function () {
+          return {
+            counter: 0
+          }
+        }
+      })
+      new Vue({
+        el: '#exa-5'
+      })
+    </script>
+
+    <div id="exa-6">  <!-- 该div就是<child>的父组件 -->
+      <!-- 在HTML中使用 kebab-case -->
+      <!-- 父组件向子组件传入一个普通字符串 -->
+      <child my-message="hello"></child>
+    </div>
+
+    <script>
+      Vue.component('child', {
+        // 组件实例的作用域是孤立的 这意味着不能(也不应该)在子组件的模板内直接引用父组件的数据
+        // 子组件要显式地用props选项声明它预期向父组件获取的数据
+        // 在JavaScript中使用camelCase
+        props: ['myMessage'],
+        // 就像data一样 prop也可以在模板中使用
+        template: '<span>{{ myMessage }}</span>'
+      })
+      new Vue({
+        el: '#exa-6'
+      })
+    </script>
+
+    <div id="exa-7">
+      <!-- 用v-bind来动态地将props绑定到父组件的数据 每当父组件的数据变化时 该变化也会传给子组件 -->
+
+      <input v-model="parentMsg">   <!-- parentMsg为父组件<div>的数据 -->
+          <!-- 相当于下面写法的语法糖
+            <input
+              v-bind:value="parentMsg"
+              v-on:input="parentMsg = $event.target.value"> 当向input框中输入字符时 $event.target.value会获取到输入的字符
+          -->
+      <br>
+      <!-- 这里使用v-bind来添加属性更符合规范 -->
+      <child v-bind:my-message="parentMsg"></child>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-7',
+        data: {
+          parentMsg: 'placeholder'
+        }
+      })
+    </script>
+
+    <div id="counter-event-example">
+      <p>{{ total }}</p>
+      <!-- 使用v-on绑定自定义事件increment 当组件被单击时 这里的increment事件就会触发 -->
+      <button-counter v-on:increment="incrementTotal"></button-counter>
+      <button-counter v-on:increment="incrementTotal"></button-counter>
+    </div>
+
+    <script>
+      Vue.component('button-counter', {
+        // 在模版中 为单击事件绑定了一个响应的方法 该方法需要定义在组件中
+        template: '<button @click="incrementCounter">{{ counter }}</button>',
+
+        // 组件数据 每个<button-counter>组件都有自己独立的counter数据 并不与其他<button-counter>组件共享
+        data: function () {
+          return {
+            counter: 0
+          }
+        },
+        // 组件方法 当<button-counter>组件发生单击事件时 它的数据counter自增1 并且在该组件上触发自定义事件increment
+        methods: {
+          incrementCounter: function () {
+            this.counter += 1
+            // this指向子组件 子组件通过$on(eventName)(监听事件)和$emit(eventName)(触发事件)来和父组件通信
+            // 触发自定义事件increment
+            this.$emit('increment')
+          }
+        },
+      })
+
+      new Vue({
+        el: '#counter-event-example',
+        data: {
+          total: 0
+        },
+        methods: {
+          incrementTotal: function () {
+            this.total += 1
+          }
+        }
+      })
+
+      // 父组件通过Prop向子组件传递数据 子组件通过触发事件向父组件发送消息
+
+    </script>
+
+    <div id="exa-8">
+      <currency-input v-model="price"></currency-input>
+      <!-- 在组件中使用v-model 相当于下面的简写
+        <currency-input
+          v-bind:value="price"  父组件向子组件传递数据
+          v-on:input="price = arguments[0]">  当子组件触发input事件时 Number(formattedValue)就会赋值给price
+        </currency-input>
+      -->
+      <p>{{ price }}</p>
+    </div>
+
+    <script>
+
+      // 在组件的模版中
+      // ref接收一个字符串 用来给元素或子组件注册引用ID 引用信息将会注册在父组件的$refs对象上
+      // ref如果在普通的DOM元素上使用 引用指向的就是DOM元素 如果用在子组件上 引用就指向组件实例
+
+      // 在template属性中的<input>元素上 使用ref为子组件指定一个引用ID 父组件<currency-input>可以通过 $refs.labelInput 来引用到<input>元素
+      // 通过v-on命令监听input事件(在value属性值改变时实时触发 但是通过js改变value时不会触发)
+
+      // 在<input>中执行 v-bind:value="value" 时 price又赋值给<input>的value属性
+      Vue.component('currency-input', {
+        template: '\
+          <span>\
+            $\
+            <input\
+              ref="label-input"\
+              v-bind:value="value"\
+              v-on:input="updateValue($event.target.value)"\
+            >\
+          </span>\
+        ',
+        props: ['value'],  // 这里必须是value 这里的 'value' 指的就是 <currency-input> 中 v-bind:value="price" 时传递的值(price)
+                           // 这个prop将应用到template中的<input>元素上 该prop赋值给input元素的value属性
+
+        methods: {
+          // 不是直接更新值 而是使用此方法来对输入值进行格式化和位数限制
+          updateValue: function (value) {
+            var formattedValue = value
+              .trim() // 删除两侧的空格符
+
+              .slice( // 保留2位小数
+                0,
+                value.indexOf('.') === -1  // 如果输入的值没有小数点 返回输入字符串的长度 否则返回取小数点后两位后的字符串长度
+                  ? value.length
+                  : value.indexOf('.') + 3
+              )
+            // 如果输入值不合规 则覆盖为合规的值
+            if (formattedValue !== value) {
+              // 这里this指向<currency-input>组件
+              this.$refs.labelInput.value = formattedValue  // $refs.labelInput拿到template属性中定义的input元素
+            }
+            // 通过input事件带出数值 这里使得输入非数字时返回 NaN
+            // Number(null)返回 0 所以当输入框没有内容时 price会被赋值0
+            this.$emit('input', Number(formattedValue))  // 子组件通过触发input事件 向父组件传递数据
+                                                         // 父组件通过 v-bind:value="price" (子组件中通过 props: ['value'] 声明预期接收的数据) 向子组件发送数据
+          }
+        }
+      })
+
+      new Vue({
+        el: '#exa-8',
+        data: {
+          price: '2018'
+        }
+      })
+    </script>
+
+    <div id="exa-9">
+      <!-- v-bind:value="msg" 这里传递根实例的数据 如果写成 value="available" 也可以实现数据从父组件到子组件的传递-->
+      <!-- 子组件中通过 $emit 触发的 change事件 被这里(父组件)的v-model捕获 然后触发change事件时附带的参数(!this.checkedData)被传递给foo 从而改变根实例的数据 -->
+      <!-- 这里向子组件发送两个数据 根实例中的数据foo(子组件通过checkedData属性接收该数据) 和数据msg(子组件通过value属性接收该数据) -->
+      <my-checkbox v-model="foo" v-bind:value="msg"></my-checkbox>
+      <label for="isChecked">{{ foo }}</label>
+    </div>
+
+    <script>
+      Vue.component('my-checkbox',{
+        // 在模版中 监听change事件
+        template: '<input type="checkbox" id="isChecked" @change="showValue" checked />',
+        // 在自定义组件<my-checkbox>上使用v-model时 父组件向子组件传递的数据默认被赋值到value 默认监听的事件为input
+        // 通过model属性修改v-model指令的默认行为
+        model: {  
+          prop: 'checkedData',  // 修改默认的数据载体value为checkedData
+          event: 'change'  // 修改默认的input事件为change事件
+        },
+        props: {  // 声明子组件希望接收到的父组件下发的数据及其类型
+          value: String,  // value属性期望接收到的数据类型为String
+          checkedData: Boolean
+        },
+        methods: {
+          showValue: function(){
+            console.log(this.value);  // 打印父组件传递的数据
+            console.log(this.checkedData);
+            this.$emit('change', !this.checkedData)  // 这里的表达式 !this.checkedData 的值将赋值给foo 通过触发事件 改变根实例的数据
+
+            // 默认为选中 显示true
+            // 当第一次取消选中时 控制台输出 available和true
+            // 当再次选中时 控制台输出 available和false
+          }
+        }
+      })
+      var exa9 = new Vue({
+        el: '#exa-9',
+        data: {
+          foo: true,
+          msg: "available"
+        }
+      })
+    </script>
+
+    <div id="exa-10">
+      <input type="checkbox" id="isChecked" v-model="picked" />
+      <label for="isChecked">{{ picked }}</label>
+    </div>
+
+    <script>
+      var exa10 = new Vue({
+        el: '#exa-10',
+        data: {
+          picked: true
+        }
+      })
+
+      // 对于type="checkbox"的input元素来说 v-model绑定的属性的值似乎和checked属性有一定的关系
+    </script>
+
+  </body>
+
+</html>
