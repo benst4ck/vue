@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>vue-component-2</title>
+    <script src="vue.js"></script>
+    <style type="text/css">
+      .prgr {
+        color: #168de2;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 通过<slot>实现内容分发 混合父组件的内容与子组件自己的模板 -->
+
+    <div id="exa-1">
+      <h1>我是父组件的标题</h1>
+      <my-component1>
+        <!-- 这里的p元素将被下发到子组件中模板中的slot标记处 -->
+        <!-- 保留一个未命名插槽 这个插槽是默认插槽 也就是说它会作为所有未匹配到插槽的内容的统一出口 -->
+        <p slot="main" class="prgr">2.分发到具名插槽中</p>
+        <p class="prgr">这是一些初始内容</p>
+        <p slot="main" class="prgr">1.分发到具名插槽中</p>
+        <p class="prgr">这是更多的初始内容</p>
+      </my-component1>
+    </div>
+
+    <script>
+
+      Vue.component('my-component1', {
+        template: '\
+          <div>\
+            <h2>我是子组件的标题</h2>\
+            <slot>\
+              只有在没有要分发的内容时才会显示\
+            </slot>\
+            <p>\
+            下面是带name属性的插槽\
+            </p>\
+            <slot name="main">\
+            </slot>\
+          </div>\
+        '
+      })
+
+      new Vue({  // 这里应该放在注册组件的后面
+        el: '#exa-1'
+      })
+    </script>
+
+    <div id="exa-2">
+      <my-awesome-list :items="src">
+        <!-- slot-scope能被用在任意元素或组件中 形成一个作用域插槽 -->
+        <!-- slot-scope的值将被用作一个临时变量名 通过这个变量可以访问传递到<slot>中的数据 -->
+
+        <!-- 通过slot属性 指定元素被分发到对应的具名插槽(<slot name="item>) -->
+        <li slot="item" slot-scope="p">{{ p.text }}</li>
+      </my-awesome-list>
+    </div>
+
+    <script>
+      Vue.component('my-awesome-list', {
+        // 在子组件模板中通过 :text="item.text" 向<slot>插槽内发送数据"item.txt"(该数据来源于父组件) 数据的载体为text 
+        // 当<li>被下发到该插槽中时 通过<li>中的slot-scope="p"获得该<slot>作用域的引用
+        // 此时就能通过变量p 访问到发送到<slot>中的数据
+        template: '\
+          <ul>\
+            <!-- 这里的items前可以省略掉this -->\
+            <slot name="item"\
+              v-for="item in items"\
+              :text="item.txt">\
+            </slot>\
+          </ul>\
+        ',
+        props: ['items']
+      })
+      new Vue({
+        el: "#exa-2",
+        data: {
+          src: [{txt:'foo'}, {txt:'bar'}, {txt:'baz'}]
+        }
+      })
+
+      // 对于具名插槽 <slot name="item"> 当使用 v-for="item in items" 命令后 将渲染出三个这样的具名插槽 但是每个具名插槽作用域内的数据是不同的
+      /* 
+        <slot name="item"> </slot>  该插槽作用域内 变量text的值为 'foo'
+        <slot name="item"> </slot>  该插槽作用域内 变量text的值为 'bar'
+        <slot name="item"> </slot>  该插槽作用域内 变量text的值为 'baz'
+      */
+      // <li slot="item">元素被发送到上面的三个插槽中 通过slot-scope属性定义的变量p可以访问到<li>元素所在插槽的作用域 所以通过p.text可以访问到插槽内的text变量
+
+    </script>
+
+  </body>
+</html>
