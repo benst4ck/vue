@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>eventBubble</title>
+    <meta charset='utf-8'>
+    <script src="vue.js"></script>
+    <style>
+      .p {
+        padding: 30px;
+        color: #ffdd00;
+        height: 150px;
+        width: 800px;
+        background: #005387;
+        text-align: center;
+        font-size: 30px;
+      }
+      .c {
+        height: 40px;
+        width: 200px;
+        position: absolute;
+        left:330px;
+        margin:20px;
+        color: #005387;
+        background: #ffdd00;
+        text-align: center;
+        border-radius: 5px;
+      }
+
+      hr {
+        border-width: 0.3px;
+        border-color: #b5e8a0;
+      }
+
+    </style>
+
+    <script>
+      var fun1 = function (e) {
+        alert("parent clicked");
+      }
+      var fun2 = function (e) {
+        e.stopPropagation();  // 阻止单击事件向上冒泡 默认情况下 子节点的点击事件触发后会向上冒泡到父元素 导致父元素的点击事件也被触发
+        alert("child clicked");
+      }
+   </script>
+  </head>
+
+  <body>
+    <!-- 这里的参数必须写成event -->
+    <div class="p" onclick="fun1(event)">
+      parentNode
+      <div class="c" onclick="fun2(event)">
+        childNode
+      </div>
+    </div>
+
+    <p>复选框和链接的默认行为都已被阻止 前者不会被选中 后者不会跳转</p>
+
+    <form>
+      <!-- <label>标签为input元素定义标注 通过for属性将label绑定到另外一个元素 for属性应当与相关元素的id属性相同 -->
+      <label for="id-checkbox">Checkbox:</label>
+      <!-- type="checkbox" 指定input元素为复选框类型 -->
+      <input type="checkbox" id="id-checkbox"/>
+    </form>
+
+    <div id="output-box"></div>
+    <script>
+      //.querySelector() 获取文档中id="id-checkbox"的元素
+      //.addEventListener() 为元素添加事件监听
+      //.innerHTML属性 设置或返回开始和结束标签之间的HTML
+      document.querySelector("#id-checkbox").addEventListener("click", function(event) {
+        document.getElementById("output-box").innerHTML += "Sorry! <code>preventDefault()</code> won't let you check this!<br>";
+        event.preventDefault();   // 阻止默认行为的正常工作 这里使得复选框无法被选中
+      });
+    </script>
+
+    <a id="exa-1" href="http://www.baidu.com" v-on:click.prevent="doThis">Link</a>
+
+    <script>
+      new Vue({
+        el: '#exa-1',
+        methods:{
+          doThis: function () {
+            alert("v-on:click.prevent中的prevent事件修饰符相当于js原生的.preventDefault()，它将阻止节点的默认行为，这里使得链接不跳转")
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-2" class="p" v-on:click="fun1()">
+      parentNode
+      <!-- .stop事件修饰符相当于js原生的.stopPropagation() -->
+      <div class="c" v-on:click.stop="fun2()">
+        childNode
+      </div>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-2',
+        methods:{
+          fun1: function () {
+            alert("parent clicked");
+          },
+          fun2: function () {
+            alert("child clicked");
+          }
+        }
+      })
+    </script>
+    <br/><hr/>
+    <form>
+      <label for="exa-3">UserName:</label>
+      <!-- 当keyCode值为65(即按了键盘上的a字母)时 调用quit方法 -->
+      <input type="text" id="exa-3" v-on:keyup.65="a()"/>
+    </form>
+
+    <script>
+      new Vue({
+        el: '#exa-3',
+        methods:{
+          a: function () {
+            alert("you pressed the 'a'")
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
