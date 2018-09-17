@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>advanced</title>
+  <script src="vue.js"></script>
+</head>
+<body>
+
+  <div id="exa-1"></div>
+  <script>
+  // 创建构造器 参数是一个包含组件选项的对象
+  var Profile = Vue.extend({
+    template: '<p>{{firstName}} {{lastName}} aka {{alias}}</p>',
+    myOption: "customOption",  // 自定义属性
+    data: function () {  // data选项在Vue.extend()中必须是函数
+      return {
+        firstName: 'Walter',
+        lastName: 'White',
+        alias: 'Heisenberg'
+      }
+    }
+  })
+  // 创建Profile实例 并挂载到一个元素上
+  new Profile().$mount('#exa-1')
+
+  // 结果 <p>Walter White aka Heisenberg</p>  没有出现div
+  </script>
+
+  <script>
+
+  // 全局注册混合对象 
+  // 一旦使用全局混合对象 将会影响到所有之后创建的Vue实例 前一个Profile实例不会受到影响 它的自定义属性myOption不会在控制台输出
+  Vue.mixin({
+    created: function () {  // 该钩子函数会混合到后面定义的所有Vue实例中
+      // 通过this.$options来获取自定义属性
+      var myOption = this.$options.myOption  // 获取Vue实例中的自定义属性(myOption) 如果存在则打印到控制台 
+      if (myOption) {
+        console.log(myOption)
+      }
+    }
+  })
+
+  // 定义一个混合对象
+  var myMixin = {
+    created: function () {  // created钩子函数将在实例创建完成后立即被调用
+      console.log('混合对象的钩子被调用')
+      this.hello()
+    },
+    methods: {
+      hello: function () {
+        console.log('hello from myMixin!')
+      },
+      foo: function () {
+        console.log('foo')
+      },
+      conflict: function () {
+        console.log('from mixin')
+      }
+    }
+  }
+
+  // 当组件和混合对象含有同名选项(这里是created选项)时 这些选项将以恰当的方式混合 比如 同名钩子函数(created对应的函数)将混合为一个数组 因此都将被调用
+  // 另外 混合对象的钩子将在组件自身钩子之前调用
+  // 值为对象的选项 例如 methods components和directives 将被混合为同一个对象 两个对象键名冲突时 取组件对象的键值对
+
+  // 定义一个使用混合对象的组件
+  var Component = Vue.extend({  // 在这里也可以写成 var vm = new Vue({}) 但是后面就不需要调用new关键字来新建对象 而是直接使用vm.foo()
+                                // 两种方式使用同样的策略进行合并
+    mixins: [myMixin],  // 混合(mixins)是一种分发Vue组件中可复用功能方式 混合对象可以包含任意组件选项
+    myOption: "customOption1",
+    created: function () {
+      console.log('组件自己的钩子被调用')
+    },
+    methods: {
+      bar: function () {
+        console.log('bar')
+      },
+      conflict: function () {
+        console.log('from self')
+      }
+    }
+  })
+
+  var component = new Component()
+
+  component.foo()  // foo
+  component.bar()  // bar
+  component.conflict()  // from self
+
+  </script>
+
+  <script>
+  function setFocus() {
+    document.getElementById('check1').focus()
+  }
+  function loseFocus() {
+    document.getElementById('check1').blur()
+  }
+  </script>
+
+
+  <form id="exa-2">
+    <input type="text" id="check1" v-focus />
+    <br />
+    <input type="button" onclick="setFocus()" value="Set focus" />
+    <input type="button" onclick="loseFocus()" value="Lose focus" v-focus />  <!-- 页面同一时刻只有一处能获取焦点 两个元素同时使用v-focus时 后面一个生效 -->
+  </form>
+  <br />
+
+  <script>
+  // 注册全局自定义指令 v-focus (v-focus是自定义的 Vue中并不存在)
+  Vue.directive('focus', {
+    // 被绑定v-focus的元素渲染到页面中时调用inserted钩子函数
+    inserted: function (el) {  // el参数指的是指令所绑定的元素 可以用来直接操作DOM
+      // 聚焦元素
+      el.focus()
+    }
+  })
+  new Vue({
+    el: '#exa-2'
+  })
+  </script>
+
+  <div id="exa-3">
+    <!-- 默认的color为black v-bcolor=color为使用默认背景颜色 这里先修改了data中的color值为#33cc99 然后再将color值绑定给指令 -->
+    <span style="padding:3px;color:white;border-radius:5px;" v-bcolor=color="#33cc99">{{ text }}</span>
+  </div>
+  <br />
+
+  <script>
+  var exa3 = new Vue({
+    el: '#exa-3',
+    data: {
+      color: 'black',
+      text: 'umbrella'
+    },
+    directives: {  // 实例内部定义的指令
+      bcolor: function (el, binding) {
+        // binding.value获取指令的绑定值 #33cc99
+        el.style.backgroundColor = binding.value
+      }
+    }
+  })
+
+  console.log(exa3.color)  // "#33cc99"
+  </script>
+
+  <div id="exa-4">
+    <span style="padding:3px 5px;color:#2c8aec;border-radius:5px;" v-bcolor="{ style:'solid', color:'#ffcc00', width:'2px', text:'Vue!', border:'1px solid #ff0000' }"></span>
+  </div>
+
+  <script>
+  var exa4 = new Vue({
+    el: '#exa-4',
+    data: {
+      color: 'black',
+      text: 'umbrella'
+    },
+    directives: {
+      bcolor: function (el, binding) {
+        // 如果指令需要多个值 可以传入一个JavaScript对象字面量 指令函数能够接受所有合法的JavaScript表达式
+        el.style.border = binding.value.border
+        // 也可以将数据一条一条都进行绑定
+        // el.style.borderStyle = binding.value.style
+        // el.style.borderWidth = binding.value.width
+        // el.style.borderColor = binding.value.color
+        el.innerText = binding.value.text
+      }
+    }
+  })
+  // 实例中的数据没有发生改变
+  console.log(exa4.color)  // "black"
+  console.log(exa4.text)  // "umbrella"
+  </script>
+
+  <div id="exa-5">
+    <blog-post>
+
+      <span>everything will be ok (in vm.$slots.default)</span>  <!-- 这样的没有slot属性的节点不会被分发到具名插槽中 在render函数中通过this.$slots.default可以获得 -->
+      <p>Here's some page content, which will be included in vm.$slots.default, because it's not inside a named slot.</p>
+      <p slot="footer">Copyright 2016 Evan You</p>
+
+      <p>If I have some content down here, it will also be included in vm.$slots.default.</p>
+
+      <!-- 这里的<h1>元素将被分发到插槽<slot name="header"></slot>中 在render函数中通过 this.$slots.header 可以拿到这个<h1>元素 -->
+      <h1 slot="header">About Me</h1>
+    </blog-post>
+  </div>
+
+  <script>
+  Vue.component('blog-post', {
+    // render更能够充分发挥JS的编程能力 它的优先级高于template选项和el选项
+    // 该渲染函数接收一个createElement方法作为第一个参数用来创建VNode
+    // createElement方法的第一个参数为要创建的元素的tag name 第二个参数为第一个参数所创建的元素的子元素
+    render: function (createElement) {
+      // vm.$slots用来访问被插槽分发的内容 每个具名插槽有其相应的属性 例如 slot="foo" 中的内容将会在 vm.$slots.foo 中被找到
+      var header = this.$slots.header
+      var body   = this.$slots.default  // default属性包括了所有没被包含在具名插槽中的节点。
+      var footer = this.$slots.footer
+      return createElement('div', [
+        createElement('header', header),
+        createElement('main', body),
+        createElement('footer', footer)
+      ])
+    }
+  })
+  new Vue({
+    el: '#exa-5'
+  })
+  </script>
+  
+  <div id="exa-6">
+    <anchored-heading :level="2">  <!-- 传递自定义值 通过子组件中props属性定义的level来传递数据 -->
+      Vue.js<span>(render)</span>
+    </anchored-heading>
+      <!-- 
+        这里组件中有两个VNode 一个是 Vue.js 另一个是 <span>(render)</span>
+        对于 Vue.js 这个VNode 
+          {tag: undefined, children: undefined, text: "Vue.js", elm: text}
+        对于 <span>(render)</span> 这个VNode 
+          {tag: span, children: [VNode], text: undefined, elm: span}
+        children: [VNode] 指的是 
+          {tag: undefined, children: undefined, text: "(render)", elm: text}
+        this.$slots.default拿到的就是这个组件中这两个VNode构成的数组
+      -->
+
+    <anchored-heading :level=level>  <!-- 传递根实例data中的level数据 -->
+      <span>Node.js</span>
+    </anchored-heading>
+
+    <anchored-heading :level="3">
+      <div><p>this is <span>Nuxt.js</span></p></div>
+    </anchored-heading>
+  </div>
+
+  <script>
+  var getChildrenTextContent = function (vnodes) {
+    return vnodes.map(function (vnode) {
+      return vnode.children
+        ? getChildrenTextContent(vnode.children)  // 如果vnode.children存在(true) 则进行递归
+        : vnode.text  // 如果vnode.children的值为undefined(false) 就返回 vnode.text
+    }).join('')  // 最后将这些text值整合为字符串
+    // 对于第一个组件 调用getChildrenTextContent后 返回一个数组 ["Vue.js", "(render)"] 当调用join('')后 最终返回字符串 "Vue.js(render)"
+    // 调用.toLowerCase() 返回 "vue.js(render)"
+    // 调用.replace(/\W+/g, '-') 返回 "vue-js-render-"
+    // 调用.replace(/(^\-|\-$)/g, '') 返回 "vue-js-render"
+  }
+
+  Vue.component('anchored-heading', {
+    render: function (createElement) {  // 对于每一个<anchored-heading>都会调用一次render函数来渲染
+      // 创建 kebabCase id
+      console.log(this.$slots.default)
+      var headingId = getChildrenTextContent(this.$slots.default)  // this.$slots.default是一个数组
+        .toLowerCase()
+        .replace(/\W+/g, '-')  // \W+ 匹配一个或多个[^a-zA-Z0-9] 并替换成 "-"
+        .replace(/(^\-|\-$)/g, '')  // 如果字符串首尾为 "-" 则替换为空字符串
+      console.log('headingId: '+headingId)
+      return createElement(
+        'h' + this.level,  // this指的是这个子组件 this.level指的是子组件props属性中level从父组件接收到的值
+        [
+          createElement('a', {  // 创建<a>元素节点
+            attrs: {  // 为<a>元素添加属性
+              name: headingId,
+              href: '#' + headingId
+            }
+          }, this.$slots.default)  // 将this.$slots.default放到<a>元素中
+        ]
+      )
+    },
+    props: {  // 声明期望父组件传递的变量
+      level: {
+        type: Number,
+        required: true
+      }
+    }
+  })
+
+  new Vue({
+    el: '#exa-6',
+    data: {
+      level: 1
+    }
+  })
+  </script>
+
+</body>
+</html>
