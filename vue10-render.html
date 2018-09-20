@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>render</title>
+  <script src="vue.js"></script>
+  <style type="text/css">
+    input {
+      padding: 2px 4px;
+      border-color: #0db7ed; 
+      border-radius: 3px;
+      border-width: 1px;
+      box-shadow: 0px 0px 10px 2px #c1f1fc;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="exa-1">
+    <!-- 当v-if命令所对应表达式的布尔值为false时 不显示v-if命令所在的元素 显示v-else命令所在的元素 -->
+    <ul v-if="items.length">
+      <li v-for="item in items">{{ item.name }}</li>
+    </ul>
+    <p v-else>No items found.</p>
+  </div>
+  <script>
+  // 注册全局过滤器 但这里并没有使用 后面有使用
+  Vue.filter('capitalize', function (value) {
+    if (!value) return ''
+    value = value.toString()  // 转换为字符串
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  })
+  new Vue({
+    el: '#exa-1',
+    data: {
+      items: [
+        {name: 'vue.js'},
+        {name: 'node.js'},
+        {name: 'nuxt.js'}
+      ]
+    }
+  })
+  </script>
+
+  <div id="exa-2">
+    <render-ul></render-ul>
+  </div>
+
+  <script>
+    Vue.component('render-ul', {
+      // 使用原生的JS来实现上面的例子很简单 在render中通过JS的 if/else 和 map 重写
+      render: function (createElement) {
+        if (this.items.length) {
+          return createElement('ul', this.items.map(function (item) {
+            return createElement('li', item.name)
+          }))
+        } else {
+          return createElement('p', 'No items found.')
+        }
+      },
+      data: function (){
+        return {
+          items: [
+            {name: 'vue.js'},
+            {name: 'node.js'},
+            {name: 'nuxt.js'}
+          ]
+        }
+      }
+    })
+    new Vue({
+      el: '#exa-2'
+    })
+
+    // [{name: 'vue.js'}, {name: 'node.js'}, {name: 'nuxt.js'}].map((item)=>item.name)  运行结果 ["vue.js", "node.js", "nuxt.js"]
+  </script>
+
+  <div id="exa-3">
+    <render-model v-model="msg"></render-model>
+    <!-- 使用过滤器 msg将传递给capitalize过滤器对应函数的参数value -->
+    <p>{{ msg | capitalize }}</p>
+  </div>
+
+  <script>
+  Vue.component('render-model', {
+    props: ['value'],  // 父组件的数据msg和这里的value进行了双向绑定 在子组件内通过self.value来访问该prop
+    // 没有使用template属性 而是使用render 但是render函数中没有与v-model相应的api 需要自己实现相应逻辑 这就是深入底层要付出的
+    render: function (createElement) {
+      var self = this
+      console.log(self.value)  // "parent component" 当在输入框中输入字符时 这里会实时更新在控制台输出输入框的value值
+      return createElement('input', {
+        domProps: {  // DOM属性
+          value: self.value
+        },
+        on: {
+          input: function (event) {
+            self.$emit('input', event.target.value)  // 向父组件触发事件并传递数据
+          }
+        }
+      })
+    }
+  })
+  new Vue({
+    el: '#exa-3',
+    data: {
+      msg: "parent component"
+    }
+  })
+
+  </script>
+
+</body>
+</html>
