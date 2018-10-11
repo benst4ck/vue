@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>vue-transition</title>
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@3.5.1" rel="stylesheet" type="text/css">
+    <link href="./vue-transition.css" rel="stylesheet" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.14.1/lodash.min.js"></script>
+    <script src="vue.js"></script>
+    <style type="text/css">
+      .list-complete-item {
+        text-align: center;
+        width: 20px;
+        height: 20px;
+        padding: 3px;
+        border-radius: 3px;
+        border-bottom: 3px solid #d6182a;
+      }
+    </style>
+  </head>
+
+  <body>
+
+    <div id="exa-1">
+      <!-- 当单击按钮时 将根实例的数据 show 取反 "show = !show" 相当于就是事件回调 -->
+      <button v-on:click="show = !show">
+        Toggle one
+      </button>
+      <!-- 当元素移除或插入时需要添加过度效果的话 就将该元素放入到<transition>中 -->
+      <!-- 当插入或删除包含在transition组件中的元素时 会通过动态添加过渡类来控制过渡效果 这些过渡时对应的类定义在vue-transition.css中 -->
+
+      <!-- v-enter 显示元素时 元素的开始状态 -->
+      <!-- v-enter-to 显示元素时 元素渲染完成的最终状态 -->
+      <!-- v-leave 移除元素时 元素的开始状态 -->
+      <!-- v-leave-to 移除元素时 元素的最后状态 -->
+      <!-- v-enter-active : v-enter 到 v-enter-to 的过程 -->
+      <!-- v-leave-active : v-leave 到 v-leave-to 的过程 -->
+
+      <!-- 对于在 enter/leave 过渡中切换的类名 "v" 是这些类名的前缀 通过transition组件中的name属性可以重置前缀 例如本例中 v-enter-active 被替换为 fade-enter-active -->
+      <transition name="fade">
+        <p v-if="show">hello</p>
+      </transition>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-1',
+        data: {
+          show: false
+        }
+      })
+    </script>
+
+    <div id="exa-2">
+      <!-- @click 是 v-on:click的缩写 -->
+      <button @click="show = !show">
+        Toggle two
+      </button>
+      <transition name="slide-fade">
+        <p v-if="show">hello</p>
+      </transition>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-2',
+        data: {
+          show: true
+        }
+      })
+    </script>
+
+    <div id="exa-3">
+      <button @click="show = !show">Toggle show</button>
+      <transition name="bounce">
+        <p id="rotate" v-if="show">Lorem ipsum dolor sit amet, <br/>consectetur adipiscing elit. <br/>Mauris facilisis enim libero, at lacinia diam fermentum id. <br/>Pellentesque habitant morbi tristique senectus et netus.</p>
+      </transition>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-3',
+        data: {
+          show: true
+        }
+      })
+    </script>
+
+    <div id="exa-4">
+      <button @click="show = !show">
+        Toggle render
+      </button>
+      <!-- Vue的过渡系统结合第三方CSS库animate.css使用 -->
+      <transition
+        name="custom-classes-transition"
+        enter-active-class="animated rotateInUpLeft"
+        leave-active-class="animated hinge"
+      >
+        <p v-if="show" class="e4">hello</p>
+      </transition>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-4',
+        data: {
+          show: true
+        }
+      })
+    </script>
+
+    <div id="exa-5">
+      <button @click="show = !show">
+        Toggle
+      </button>
+      <!-- 声明JS钩子 这时候可以通过这些钩子实现单纯使用JS过渡 而不使用CSS -->
+      <!-- 当只用JS过渡的时候 在enter和leave中 回调函数done是必须的 否则 它们会被同步调用 过渡会立即完成 -->
+      <!-- 对于仅使用JS过渡的元素需要添加 v-bind:css="false" 这时候Vue会跳过CSS的检测 这也可以避免过渡过程中CSS的影响 -->
+      <transition
+        v-on:before-enter="beforeEnter"
+        v-on:enter="enter"
+        v-on:leave="leave"
+        v-bind:css="false"
+      >
+        <p v-if="show">
+          Demo
+        </p>
+      </transition>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-5',
+        data: {
+          show: false
+        },
+        methods: {
+          beforeEnter: function (el) {
+            el.style.opacity = 0
+            el.style.transformOrigin = 'left'  // transform-origin属性定义变换的基点 必须和transform属性一同使用
+          },
+          enter: function (el, done) {
+            Velocity(el, { opacity: 1, fontSize: '1.4em' }, { duration: 300 })
+            Velocity(el, { fontSize: '1em' }, { complete: done })
+          },
+          leave: function (el, done) {
+            Velocity(el, { translateX: '15px', rotateZ: '50deg' }, { duration: 600 })
+            Velocity(el, { rotateZ: '100deg' }, { loop: 2 })  // 这里的rotateZ: '100deg'并不是相对于上一个Velocity的状态 而是相对于它enter完成后的状态
+            Velocity(el, {
+              rotateZ: '45deg',
+              translateY: '30px',
+              translateX: '30px',
+              opacity: 0
+            }, { complete: done })
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-6">
+      <!-- 当选中B时 其对应的value属性的值("v-b")会赋给根实例data中的view -->
+      <input type="radio" id="a" value="v-a" v-model="view">
+      <label for="a">A</label>
+      <br>
+      <input type="radio" id="b" value="v-b" v-model="view">
+      <label for="a">B</label>
+      <!-- 通过mode属性来设置过渡模式 out-in 表示当前元素先进行过渡移除 完成之后新元素过渡进入 这样过渡的过程中当前元素和新元素就会很好的衔接起来 -->
+      <transition name="component-fade" mode="out-in">
+        <!-- 这里渲染动态组件 is属性用于动态组件 组件会随着view数据值的改变而改变 通过view的值来选取对应的组件 -->
+        <component v-bind:is="view"></component>
+      </transition>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-6',
+        data: {
+          view: 'v-a'
+        },
+        components: {
+          'v-a': {
+            template: '<div>Component A</div>'
+          },
+          'v-b': {
+            template: '<div>Component B</div>'
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-7">
+      <button v-on:click="add">Add</button>
+      <button v-on:click="remove">Remove</button>
+      <!-- <transition-group>不同于<transition> 它会以一个真实的元素呈现 默认是<span>元素 可以通过tag属性修改 其内部子节点必须有独立的key 过度动画才能正常工作 -->
+      <transition-group name="list" tag="p">
+        <!-- 使用key 它会基于key的变化重新排列元素顺序 并且会移除key不存在的元素 -->
+        <!-- 当item发生改变时 <span>会随时被更新 同时会触发过渡 -->
+        <span v-for="item in items" v-bind:key="item" class="list-item">
+          {{ item }}  <!-- 在<span>中必须有v-bind:key="item" 这里才能拿到item值 -->
+        </span>
+      </transition-group>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-7',
+        data: {
+          items: [1,2,3,4,5,6,7,8,9],
+          nextNum: 10
+        },
+        methods: {
+          randomIndex: function () {
+            // Math.random()返回一个0到1之间的小数 Math.floor()向下取整
+            return Math.floor(Math.random() * this.items.length)
+          },
+          add: function () {
+            // splice()方法从数组(items)索引为(this.randomIndex())的地方开始 删除n个元素 然后在当前位置插入this.nextNum 最后nextNum的值自增1
+            this.items.splice(this.randomIndex(), 0, this.nextNum++)
+          },
+          remove: function () {
+            this.items.splice(this.randomIndex(), 1)
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-8">
+      <button v-on:click="shuffle">Shuffle</button>
+      <button v-on:click="add">Add</button>
+      <button v-on:click="remove">Remove</button>
+      <transition-group name="list-complete" tag="p">
+        <span
+          v-for="item in items"
+          v-bind:key="item"
+          class="list-complete-item"
+        >
+          {{ item }}
+        </span>
+      </transition-group>
+    </div>
+
+    <script>
+      new Vue({
+        el: '#exa-8',
+        data: {
+          items: [1,2,3,4,5,6,7,8,9],
+          nextNum: 10
+        },
+        methods: {
+          randomIndex: function () {
+            return Math.floor(Math.random() * this.items.length)
+          },
+          add: function () {
+            this.items.splice(this.randomIndex(), 0, this.nextNum++)
+          },
+          remove: function () {
+            this.items.splice(this.randomIndex(), 1)
+          },
+          shuffle: function () {
+            this.items = _.shuffle(this.items)  // 变量'_' 来自于lodash
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-9">
+      <input v-model="query">
+      <transition-group
+        name="staggered-fade"
+        tag="ul"
+        v-bind:css="false"
+        v-on:before-enter="beforeEnter"
+        v-on:enter="enter"
+        v-on:leave="leave"
+      >
+        <li
+          v-for="(item, index) in computedList"
+          v-bind:key="item.msg"
+          v-bind:data-index="index"
+        >{{ item.msg }}</li>
+      </transition-group>
+    </div>
+
+    <script>
+      // v-bind:key="item.msg" 数据传递
+      // v-bind:data-index="index" 属性设置
+      // 定义在<transition>和<transition-group>中的元素在发生插入或移除时会自动调用methods中定义的钩子来进行过渡
+      new Vue({
+        el: '#exa-9',
+        data: {
+          query: '',
+          list: [
+            { msg: 'Bruce Lee' },
+            { msg: 'Jackie Chan' },
+            { msg: 'Chuck Norris' },
+            { msg: 'Jet Li' },
+            { msg: 'Kung Fury' }
+          ]
+        },
+        computed: {
+          // 计算属性是基于它们的依赖进行缓存的 在这里query和list都是依赖 当有一个依赖发生改变时 计算属性才会重新调用
+          computedList: function () {  // 该方法返回一个列表
+            var vm = this  // 这里的this指向vue根实例
+            return this.list.filter(function (item) {  // 这里的item指的是list列表的每一项 filter过滤取出函数返回值为true的item
+              // 在这个函数中 这里的this并不指向vue根实例 所以将外层的this绑定到vm变量 以便在这个函数中能够访问外层的vue根实例
+              return item.msg.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1
+            })
+          }
+        },
+        methods: {
+          // 参数el指的是每一个筛选移出或插入的<li>
+          beforeEnter: function (el) {  // beforeEnter是不可或缺的 velocity使得在插入元素时 元素的opacity和height是渐变过渡的
+
+            el.style.opacity = 0
+            el.style.height = 0
+          },
+          enter: function (el, done) {
+            // html5标准允许在普通的元素标签里面 嵌入一个或多个类似data-*的属性 以实现一些简单数据的存取 并且能通过JS动态修改其属性值 
+            // 通过dataset.index访问data-index
+            var delay = el.dataset.index * 550
+            console.log(el)
+            setTimeout(function () {
+              Velocity(
+                el,
+                { opacity: 1, height: '1.6em' },
+                { complete: done }
+              )
+            }, delay)
+          },
+          leave: function (el, done) {
+            var delay = el.dataset.index * 150
+            console.log(el)
+            setTimeout(function () {
+              Velocity(
+                el,
+                { opacity: 0, height: 0 },
+                { complete: done }
+              )
+            }, delay)
+          }
+        }
+      })
+    </script>
+
+    <div id="exa-10">
+      FadeIn: <input type="range" id="FadeIn" v-model="fadeInDuration" min="0" v-bind:max="maxFadeDuration">
+      <label for="FadeIn">{{ fadeInDuration }}</label></br>
+      FadeOut: <input type="range" id="FadeOut" v-model="fadeOutDuration" min="0" v-bind:max="maxFadeDuration">
+      <label for="FadeOut">{{ fadeOutDuration }}</label>
+      <transition
+        v-bind:css="false"
+        v-on:before-enter="beforeEnter"
+        v-on:enter="enter"
+        v-on:leave="leave"
+      >
+        <p v-if="show">hello</p>
+      </transition>
+
+      <transition name="button-fade1" mode="out-in">
+        <!-- 当有相同标签名的元素切换时 需要通过key特性设置唯一的值来标记以让Vue区分它们 否则Vue为了效率只会替换相同标签内部的内容 -->
+        <button
+          v-if="stop"
+          v-on:click="stop = false; show = false"
+          key="start"
+        >Start</button>
+        <button
+          v-else
+          v-on:click="stop = true"
+          key="stop"
+        >Stop</button>
+      </transition>
+    </div>
+
+    <script>
+      // key="stop"中的stop并不来自data里面的stop数据 它只是为了区分两个按钮
+      new Vue({
+        el: '#exa-10',
+        data: {
+          show: true,
+          fadeInDuration: 1000,
+          fadeOutDuration: 1000,
+          maxFadeDuration: 1500,
+          stop: true
+        },
+        mounted: function () {  // 页面加载时会执行一次该函数 然后执行leave钩子函数 由于在leave钩子的最后 vm.show = true 所以又执行enter
+                                // 由于 vm.stop返回值为true 所以不执行 vm.show = false 所以第一次加载页面时 hello字符先leave 然后enter 最后停止
+          this.show = false;
+        },
+        methods: {
+          // 这些方法都是用来渲染"hello"所用的 而不是用于渲染按钮
+          beforeEnter: function (el) {
+            el.style.opacity = 0
+          },
+          enter: function (el, done) {
+            var vm = this
+            Velocity(el,
+              { opacity: 1 },
+              {
+                duration: this.fadeInDuration,
+                complete: function () {
+                  done()
+                  if (!vm.stop) vm.show = false
+                }
+              }
+            )
+          },
+          leave: function (el, done) {
+            var vm = this
+            Velocity(el,
+              { opacity: 0 },
+              {
+                duration: this.fadeOutDuration,
+                complete: function () {
+                  done()
+                  vm.show = true
+                }
+              }
+            )
+          }
+        }
+      })
+
+    </script>
+
+  </body>
+</html>

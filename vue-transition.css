@@ -1,0 +1,107 @@
+/* exa-1 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 2.5s  /* transition属性设置opacity属性的过渡效果 持续时间为2.5秒 */
+}
+.fade-enter,  /* 显示元素时 元素的开始状态 */
+.fade-leave-to  /* 移除元素时 元素的最后状态  */
+{
+  opacity: 0  /* 透明 */
+}
+
+/* 元素默认的opacity为1 */
+
+/* exa-2 */
+.slide-fade-enter-active {
+  transition: all .3s ease;  /* all表示所有属性都会获得过渡效果 .3s表示过渡效果持续0.3秒 ease表示过渡方式 */
+}
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter,  
+.slide-fade-leave-to  
+{
+  transform: translateX(10px);  /* 通过transform属性变换元素 往X轴的正方向(向右)移动10px */
+  opacity: 0;
+}
+
+/* exa-3 */
+#rotate {
+  margin: 40px 200px;  /* 上下40px 左右200px */
+  transform: rotate(10deg);  /* 通过transform属性变换元素 顺时针旋转10度
+                                如果不定义这里 只靠动画中100%处定义的transform: rotate(10deg); 会出现脱节 可以删除里查看效果 */
+}
+.bounce-enter-active {
+  animation: bounce-in 1.5s;
+}
+.bounce-leave-active {
+  animation: bounce-in 1.5s reverse;  /* reverse表示反向播放动画 infinite表示无限重复动画 */
+}
+@keyframes bounce-in {  /* 定义一个名为bounce-in的动画 */
+  0% {
+    transform: scale(0);  /* x和y都乘以0 相当于移除元素 */
+  }
+  50% {
+    transform: scale(1.5);  /* 在X和Y方向上都扩大1.5倍 这里没有定义rotate(10deg) 所以使用其默认值为rotate(0deg) */
+  }
+  100% {
+    transform: scale(1);
+    transform: rotate(10deg);
+  }
+}
+
+/* exa-4 */
+.e4 {
+  margin: 12px;
+}
+
+/* exa-6 */
+.component-fade-enter-active, .component-fade-leave-active {
+  transition: opacity .3s ease;
+}
+.component-fade-enter, .component-fade-leave-to {
+  opacity: 0;
+}
+
+/* exa-7 */
+.list-item {
+  transition: all 1s;  /* 这里all指的就是opacity: 0和transform: translateY(30px) 用1秒时间过渡到这两个状态 */
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.list-enter, .list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);  /* 向下移动30px */
+}
+.list-leave-active {
+  position: absolute;
+}
+
+/* exa-8 */
+.list-complete-item {
+  transition: all 1s;  /* 内部的实现 Vue使用了一个叫FLIP简单的动画队列 它通过transform将元素从之前的位置平滑过渡到新的位置 */
+  display: inline-block;  /* FLIP过渡的元素不能设置为 display: inline */
+  margin-right: 10px;
+}
+.list-complete-enter, .list-complete-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.list-complete-leave-active {
+  position: absolute;
+}
+
+/* exa-10 */
+.button-fade1-enter-active, .button-fade1-leave-active {
+  transition: all 1s;
+}
+.button-fade1-enter {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+.button-fade1-leave-to {
+  transform: translateX(30px);
+  opacity: 0;
+}
+
